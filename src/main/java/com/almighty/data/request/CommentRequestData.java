@@ -1,13 +1,13 @@
 package com.almighty.data.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentRequestData {
 	@Schema(hidden = true)
 	private String id;
@@ -15,7 +15,7 @@ public class CommentRequestData {
 	@Schema(hidden = true)
 	private String parentId;
 	@Schema(hidden = true)
-	private int page;
+	private Integer page;
 	@Schema(hidden = true)
-	private int pageSize;
+	private Integer pageSize;
 }

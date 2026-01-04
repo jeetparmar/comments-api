@@ -2,13 +2,17 @@ package com.almighty.data.response;
 
 import java.util.Date;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-@Data
-public class CommentData {
-	private String id;
-	private String text;
-	private String parentId;
-	private int totalSubComments;
-	private Date postedAt;
+@Getter
+@Setter
+@SuperBuilder
+public class CommentData extends ResponseData {
+    private String id;
+    private String text;
+    private String parentId;
+    private Integer totalSubComments;
+    private Date postedAt;
 }

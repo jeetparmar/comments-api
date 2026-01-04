@@ -1,16 +1,12 @@
 package com.almighty.service.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.almighty.data.enums.Status;
@@ -25,6 +21,8 @@ import com.almighty.service.CommentsService;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.almighty.constants.CommentMessages.*;
+
 @Service
 @RequiredArgsConstructor
 public class CommentsServiceImpl implements CommentsService {
@@ -33,80 +31,75 @@ public class CommentsServiceImpl implements CommentsService {
 
 	@Override
 	public ResponseData allComments(CommentRequestData requestData) {
-		List<CommentData> comments = new ArrayList<>();
-		String parentId = requestData.getParentId();
-		Page<Comments> commentsPage = repository.findAllByParentId(parentId, PageRequest
-				.of(requestData.getPage() - 1, requestData.getPageSize()).withSort(Sort.by("updatedAt").descending()));
-		List<Comments> commentList = commentsPage.getContent();
-		if (!CollectionUtils.isEmpty(commentList)) {
-			commentList.forEach(comment -> {
-				CommentData responseData = new CommentData();
-				BeanUtils.copyProperties(comment, responseData);
-				responseData.setPostedAt(comment.getUpdatedAt());
-				comments.add(responseData);
-			});
-		}
-		long totalComments = commentsPage.getTotalElements();
-		CommentsResponseData responseData = CommentsResponseData.builder().totalComments(totalComments)
-				.comments(comments).build();
-		responseData.setStatus(Status.SUCCESS);
-		responseData.setMessage(String.format("%s comment(s) fetched successfully.", totalComments));
-		return responseData;
+		int page = requestData.getPage() != null && requestData.getPage() > 0 ? requestData.getPage() - 1 : 0;
+		int pageSize = requestData.getPageSize() != null && requestData.getPageSize() > 0 ? requestData.getPageSize()
+				: 5;
+
+		var commentsPage = repository.findAllByParentId(requestData.getParentId(),
+				PageRequest.of(page, pageSize, Sort.by("updatedAt").descending()));
+
+		List<CommentData> comments = commentsPage.getContent().stream()
+				.map(comment -> CommentData.builder().id(comment.getId()).text(comment.getText())
+						.parentId(comment.getParentId()).totalSubComments(comment.getTotalSubComments())
+						.postedAt(comment.getUpdatedAt()).build())
+				.collect(Collectors.toList());
+
+		return CommentsResponseData.builder().totalComments(commentsPage.getTotalElements()).comments(comments)
+				.status(Status.SUCCESS)
+				.message(String.format(COMMENTS_FETCHED_SUCCESS, commentsPage.getTotalElements())).build();
 	}
 
 	@Override
 	public ResponseData saveOrUpdateComment(CommentRequestData requestData) {
+		Date now = new Date();
 		Comments comment;
-		String message = null, commentId = requestData.getId();
-		Date date = new Date();
-		if (StringUtils.hasText(commentId)) {
-			Optional<Comments> commentOp = repository.findById(commentId);
-			if (!commentOp.isPresent()) {
-				return new ResponseData(Status.FAILURE, "comment id is invalid.");
+
+		if (StringUtils.hasText(requestData.getId())) {
+			comment = repository.findById(requestData.getId()).orElse(null);
+
+			if (comment == null) {
+				return ResponseData.builder().status(Status.FAILURE).message(COMMENT_ID_INVALID).build();
 			}
-			comment = commentOp.get();
+
 			comment.setText(requestData.getText());
-			comment.setUpdatedAt(date);
-			message = "comment updated successfully.";
+			comment.setUpdatedAt(now);
+			repository.save(comment);
+
+			return CommentResponseData.builder().id(comment.getId()).text(comment.getText())
+					.parentId(comment.getParentId()).postedAt(now).status(Status.SUCCESS)
+					.message(COMMENT_UPDATED_SUCCESS).build();
+
 		} else {
-			comment = Comments.builder().text(requestData.getText()).createdAt(date).updatedAt(date).build();
-			String parentId = requestData.getParentId();
-			if (StringUtils.hasText(parentId)) {
-				Optional<Comments> parentCommentOp = repository.findById(parentId);
-				if (!parentCommentOp.isPresent()) {
-					return new ResponseData(Status.FAILURE, "parent comment id is invalid.");
+			comment = Comments.builder().text(requestData.getText()).createdAt(now).updatedAt(now).build();
+
+			if (StringUtils.hasText(requestData.getParentId())) {
+				Comments parent = repository.findById(requestData.getParentId()).orElse(null);
+				if (parent == null) {
+					return ResponseData.builder().status(Status.FAILURE).message(PARENT_COMMENT_ID_INVALID).build();
 				}
-				Comments parentComment = parentCommentOp.get();
-				parentComment.setTotalSubComments(parentComment.getTotalSubComments() + 1);
-				parentComment.setUpdatedAt(date);
-				repository.save(parentComment);
-				comment.setParentId(parentId);
+				parent.setTotalSubComments(parent.getTotalSubComments() + 1);
+				parent.setUpdatedAt(now);
+				repository.save(parent);
+				comment.setParentId(parent.getId());
 			}
-			message = "comment saved successfully.";
+
+			comment = repository.save(comment);
+
+			return CommentResponseData.builder().id(comment.getId()).text(comment.getText())
+					.parentId(comment.getParentId()).postedAt(now).status(Status.SUCCESS).message(COMMENT_SAVED_SUCCESS)
+					.build();
 		}
-		comment = repository.save(comment);
-		CommentResponseData responseData = CommentResponseData.builder().build();
-		BeanUtils.copyProperties(comment, responseData);
-		responseData.setPostedAt(date);
-		responseData.setStatus(Status.SUCCESS);
-		responseData.setMessage(message);
-		return responseData;
 	}
 
 	@Override
 	public ResponseData deleteComment(String id) {
-		Status status;
-		String message = null;
-		Optional<Comments> commentOp = repository.findById(id);
-		if (commentOp.isPresent()) {
-			repository.delete(commentOp.get());
-			status = Status.SUCCESS;
-			message = "comment deleted successfully.";
-		} else {
-			status = Status.FAILURE;
-			message = "comment id is invalid.";
-		}
-		return new ResponseData(status, message);
-	}
+		Comments comment = repository.findById(id).orElse(null);
 
+		if (comment != null) {
+			repository.delete(comment);
+			return ResponseData.builder().status(Status.SUCCESS).message(COMMENT_DELETED_SUCCESS).build();
+		} else {
+			return ResponseData.builder().status(Status.FAILURE).message(COMMENT_ID_INVALID).build();
+		}
+	}
 }

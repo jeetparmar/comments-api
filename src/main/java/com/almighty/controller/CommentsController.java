@@ -2,17 +2,9 @@ package com.almighty.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.almighty.data.request.CommentRequestData;
-import com.almighty.data.response.CommentResponseData;
 import com.almighty.data.response.ResponseData;
 import com.almighty.service.CommentsService;
 
@@ -20,53 +12,36 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/comments")
 @RequiredArgsConstructor
 @Tag(name = "Comments Controller")
 public class CommentsController {
 
 	private final CommentsService service;
 
-	@GetMapping("/all")
-	public ResponseEntity<ResponseData> allComments(@RequestParam(name = "parentId", required = false) String parentId,
+	@GetMapping
+	public ResponseEntity<ResponseData> getAllComments(@RequestParam(required = false) String parentId,
 			@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "5") int pageSize) {
-		try {
-			return new ResponseEntity<ResponseData>(
-					service.allComments(
-							CommentRequestData.builder().parentId(parentId).page(page).pageSize(pageSize).build()),
-					HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return ResponseEntity.ok(service
+				.allComments(CommentRequestData.builder().parentId(parentId).page(page).pageSize(pageSize).build()));
 	}
 
-	@PostMapping("/save")
+	@PostMapping
 	public ResponseEntity<ResponseData> saveComment(@RequestBody CommentRequestData requestData,
-			@RequestParam(name = "parentId", required = false) String parentId) {
-		try {
-			requestData.setParentId(parentId);
-			return new ResponseEntity<ResponseData>(service.saveOrUpdateComment(requestData), HttpStatus.CREATED);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+			@RequestParam(required = false) String parentId) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(service.saveOrUpdateComment(
+				CommentRequestData.builder().parentId(parentId).text(requestData.getText()).build()));
 	}
 
-	@PutMapping("/update/{id}")
-	public ResponseEntity<ResponseData> updateComment(@PathVariable(name = "id", required = false) String id,
+	@PutMapping("/{id}")
+	public ResponseEntity<ResponseData> updateComment(@PathVariable String id,
 			@RequestBody CommentRequestData requestData) {
-		try {
-			requestData.setId(id);
-			return new ResponseEntity<ResponseData>(service.saveOrUpdateComment(requestData), HttpStatus.ACCEPTED);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return ResponseEntity.status(HttpStatus.ACCEPTED)
+				.body(service.saveOrUpdateComment(CommentRequestData.builder().id(id).text(requestData.getText()).build()));
 	}
 
-	@DeleteMapping("/remove/{id}")
-	public ResponseEntity<ResponseData> deleteComment(@PathVariable(name = "id", required = false) String id) {
-		try {
-			return new ResponseEntity<ResponseData>(service.deleteComment(id), HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	@DeleteMapping("/{id}")
+	public ResponseEntity<ResponseData> deleteComment(@PathVariable String id) {
+		return ResponseEntity.ok(service.deleteComment(id));
 	}
 }
