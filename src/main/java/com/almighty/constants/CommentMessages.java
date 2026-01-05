@@ -10,5 +10,6 @@ public final class CommentMessages {
 	public static final String COMMENT_UPDATED_SUCCESS = "Comment updated successfully.";
 	public static final String COMMENT_SAVED_SUCCESS = "Comment saved successfully.";
 	public static final String COMMENT_DELETED_SUCCESS = "Comment deleted successfully.";
+	public static final String COMMENT_FETCHED_SUCCESS = "Comment fetched successfully.";
 	public static final String COMMENTS_FETCHED_SUCCESS = "%d comment(s) fetched successfully.";
 }

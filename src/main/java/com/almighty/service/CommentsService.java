@@ -5,7 +5,9 @@ import com.almighty.data.response.ResponseData;
 
 public interface CommentsService {
 
-	ResponseData allComments(CommentRequestData requestData);
+	ResponseData getComment(String id);
+
+	ResponseData getComments(CommentRequestData requestData);
 
 	ResponseData saveOrUpdateComment(CommentRequestData requestData);
 

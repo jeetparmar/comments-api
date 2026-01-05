@@ -30,7 +30,17 @@ public class CommentsServiceImpl implements CommentsService {
 	private final CommentsRepository repository;
 
 	@Override
-	public ResponseData allComments(CommentRequestData requestData) {
+	public ResponseData getComment(String id) {
+		Comments comment = repository.findById(id).orElse(null);
+		if (comment == null) {
+			return ResponseData.builder().status(Status.FAILURE).message(COMMENT_ID_INVALID).build();
+		}
+		return CommentResponseData.builder().id(comment.getId()).text(comment.getText()).parentId(comment.getParentId())
+				.postedAt(comment.getUpdatedAt()).status(Status.SUCCESS).message(COMMENT_FETCHED_SUCCESS).build();
+	}
+
+	@Override
+	public ResponseData getComments(CommentRequestData requestData) {
 		int page = requestData.getPage() != null && requestData.getPage() > 0 ? requestData.getPage() - 1 : 0;
 		int pageSize = requestData.getPageSize() != null && requestData.getPageSize() > 0 ? requestData.getPageSize()
 				: 5;

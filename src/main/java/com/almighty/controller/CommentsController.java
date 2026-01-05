@@ -20,10 +20,15 @@ public class CommentsController {
 	private final CommentsService service;
 
 	@GetMapping
-	public ResponseEntity<ResponseData> getAllComments(@RequestParam(required = false) String parentId,
+	public ResponseEntity<ResponseData> getComments(@RequestParam(required = false) String parentId,
 			@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "5") int pageSize) {
 		return ResponseEntity.ok(service
-				.allComments(CommentRequestData.builder().parentId(parentId).page(page).pageSize(pageSize).build()));
+				.getComments(CommentRequestData.builder().parentId(parentId).page(page).pageSize(pageSize).build()));
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<ResponseData> getCommentById(@PathVariable String id) {
+		return ResponseEntity.ok(service.getComment(id));
 	}
 
 	@PostMapping
@@ -36,8 +41,8 @@ public class CommentsController {
 	@PutMapping("/{id}")
 	public ResponseEntity<ResponseData> updateComment(@PathVariable String id,
 			@RequestBody CommentRequestData requestData) {
-		return ResponseEntity.status(HttpStatus.ACCEPTED)
-				.body(service.saveOrUpdateComment(CommentRequestData.builder().id(id).text(requestData.getText()).build()));
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+				service.saveOrUpdateComment(CommentRequestData.builder().id(id).text(requestData.getText()).build()));
 	}
 
 	@DeleteMapping("/{id}")
