@@ -1,11 +1,17 @@
 server:
-  servlet:
-    context-path: /comments
-    
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+
 spring:
   application:
     name: comment-api
   mongodb:
     host: localhost
     port: 27017
-    database: comment-db    
+    database: comment-db
