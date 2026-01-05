@@ -75,6 +75,17 @@ comments-api/
 └── README.md              # Project documentation
 ```
 
+## 📦 API Endpoints
+```bash
+| Method | Endpoint                | Description              |
+| ------ | ----------------------- | ------------------------ |
+| GET    | `/api/v1/comments`      | List all comments        |
+| GET    | `/api/v1/comments/{id}` | Retrieve a comment by ID |
+| POST   | `/api/v1/comments`      | Create a new comment     |
+| PUT    | `/api/v1/comments/{id}` | Update a comment by ID   |
+| DELETE | `/api/v1/comments/{id}` | Delete a comment by ID   |
+```
+
 ## 🤝 Contributing
 Contributions are welcome! To contribute:
 
