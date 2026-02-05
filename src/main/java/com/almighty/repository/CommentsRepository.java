@@ -8,11 +8,15 @@ import org.springframework.stereotype.Repository;
 
 import com.almighty.domain.Comments;
 
+import java.util.List;
+
 @Repository
 public interface CommentsRepository extends MongoRepository<Comments, String> {
 
 	@Query("{parentId: ?0}")
 	Page<Comments> findAllByParentId(String parentId, Pageable pageable);
+
+	List<Comments> findAllByParentId(String parentId);
 
 	Page<Comments> findAllByParentIdIsNull(Pageable pageable);
 

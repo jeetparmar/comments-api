@@ -121,10 +121,18 @@ public class CommentsServiceImpl implements CommentsService {
 		Comments comment = repository.findById(id).orElse(null);
 
 		if (comment != null) {
-			repository.delete(comment);
+			deleteCommentAndDescendants(comment);
 			return ResponseData.builder().status(Status.SUCCESS).message(COMMENT_DELETED_SUCCESS).build();
 		} else {
 			return ResponseData.builder().status(Status.FAILURE).message(COMMENT_ID_INVALID).build();
 		}
+	}
+
+	private void deleteCommentAndDescendants(Comments comment) {
+		List<Comments> children = repository.findAllByParentId(comment.getId());
+		for (Comments child : children) {
+			deleteCommentAndDescendants(child);
+		}
+		repository.delete(comment);
 	}
 }
