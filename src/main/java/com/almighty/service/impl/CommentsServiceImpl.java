@@ -121,6 +121,15 @@ public class CommentsServiceImpl implements CommentsService {
 		Comments comment = repository.findById(id).orElse(null);
 
 		if (comment != null) {
+			if (StringUtils.hasText(comment.getParentId())) {
+				Comments parent = repository.findById(comment.getParentId()).orElse(null);
+				if (parent != null) {
+					int nextCount = Math.max(0, parent.getTotalSubComments() - 1);
+					parent.setTotalSubComments(nextCount);
+					parent.setUpdatedAt(new Date());
+					repository.save(parent);
+				}
+			}
 			deleteCommentAndDescendants(comment);
 			return ResponseData.builder().status(Status.SUCCESS).message(COMMENT_DELETED_SUCCESS).build();
 		} else {
