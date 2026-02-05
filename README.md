@@ -10,6 +10,10 @@ Access the Swagger UI for API documentation and testing:
 
 **URL:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/comments/swagger-ui/index.html)
 
+Access the OpenAPI JSON:
+
+**URL:** http://localhost:8080/v3/api-docs
+
 ---
 
 ## 📸 Preview

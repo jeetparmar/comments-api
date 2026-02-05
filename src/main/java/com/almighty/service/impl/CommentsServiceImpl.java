@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -45,9 +46,23 @@ public class CommentsServiceImpl implements CommentsService {
 		int pageSize = requestData.getPageSize() != null && requestData.getPageSize() > 0 ? requestData.getPageSize()
 				: 5;
 
-		var commentsPage = repository.findAllByParentId(requestData.getParentId(),
-				PageRequest.of(page, pageSize, Sort.by("updatedAt").descending()));
-
+		var pageable = PageRequest.of(page, pageSize, Sort.by("updatedAt").descending());
+		Page<Comments> commentsPage;
+		if (StringUtils.hasText(requestData.getParentId())) {
+			if (StringUtils.hasText(requestData.getText())) {
+				commentsPage = repository.findAllByParentIdAndTextContainingIgnoreCase(requestData.getParentId(),
+						requestData.getText(), pageable);
+			} else {
+				commentsPage = repository.findAllByParentId(requestData.getParentId(), pageable);
+			}
+		} else {
+			if (StringUtils.hasText(requestData.getText())) {
+				commentsPage = repository.findAllByParentIdIsNullAndTextContainingIgnoreCase(requestData.getText(),
+						pageable);
+			} else {
+				commentsPage = repository.findAllByParentIdIsNull(pageable);
+			}
+		}
 		List<CommentData> comments = commentsPage.getContent().stream()
 				.map(comment -> CommentData.builder().id(comment.getId()).text(comment.getText())
 						.parentId(comment.getParentId()).totalSubComments(comment.getTotalSubComments())

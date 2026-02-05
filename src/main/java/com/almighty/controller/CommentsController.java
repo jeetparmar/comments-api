@@ -21,9 +21,10 @@ public class CommentsController {
 
 	@GetMapping
 	public ResponseEntity<ResponseData> getComments(@RequestParam(required = false) String parentId,
+			@RequestParam(required = false) String text,
 			@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "5") int pageSize) {
-		return ResponseEntity.ok(service
-				.getComments(CommentRequestData.builder().parentId(parentId).page(page).pageSize(pageSize).build()));
+		return ResponseEntity.ok(service.getComments(CommentRequestData.builder().parentId(parentId).text(text)
+				.page(page).pageSize(pageSize).build()));
 	}
 
 	@GetMapping("/{id}")

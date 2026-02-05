@@ -13,4 +13,10 @@ public interface CommentsRepository extends MongoRepository<Comments, String> {
 
 	@Query("{parentId: ?0}")
 	Page<Comments> findAllByParentId(String parentId, Pageable pageable);
+
+	Page<Comments> findAllByParentIdIsNull(Pageable pageable);
+
+	Page<Comments> findAllByParentIdIsNullAndTextContainingIgnoreCase(String text, Pageable pageable);
+
+	Page<Comments> findAllByParentIdAndTextContainingIgnoreCase(String parentId, String text, Pageable pageable);
 }
