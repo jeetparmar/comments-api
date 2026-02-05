@@ -14,6 +14,11 @@ Access the OpenAPI JSON:
 
 **URL:** http://localhost:8080/v3/api-docs
 
+Swagger Basic Auth:
+
+- Username: `swagger`
+- Password: `swagger123`
+
 ---
 
 ## 📸 Preview

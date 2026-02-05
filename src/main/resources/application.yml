@@ -11,6 +11,10 @@ springdoc:
 spring:
   application:
     name: comment-api
+  security:
+    user:
+      name: swagger
+      password: swagger123
   mongodb:
     host: localhost
     port: 27017
